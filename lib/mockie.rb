@@ -1,7 +1,13 @@
 module Mockie
+  class ExpectationFailed < StandardError; end
+
   module TestHelpers
     def allow(object)
       Mockie.stub_targets[object.object_id] ||= StubTarget.new(object)
+    end
+
+    def expect(object)
+      MockTarget.new(object)
     end
 
     def receive(message)
@@ -11,6 +17,14 @@ module Mockie
 
   def self.stub_targets
     @stub_targets ||= {}
+  end
+
+  def self.mocks
+    @mocks ||= []
+  end
+
+  def self.verify
+    mocks.each(&:verify)
   end
 
   class StubTarget
@@ -33,6 +47,13 @@ module Mockie
     end
   end
 
+  class MockTarget < StubTarget
+    def to(definition)
+      Mockie.mocks << definition
+      super
+    end
+  end
+
   class StubDefinition
     attr_reader :message, :return_value, :args
 
@@ -49,6 +70,10 @@ module Mockie
     def with(*args)
       @args = args
       self
+    end
+
+    def verify
+      raise ExpectationFailed
     end
   end
 end

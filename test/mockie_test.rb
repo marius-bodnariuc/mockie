@@ -33,4 +33,14 @@ class MockieTest < Test::Unit::TestCase
     assert_equal(john, repo.get(1))
     assert_equal(jane, repo.get(2))
   end
+
+  # DONE with stubbing
+
+  def test_mockie_throws_when_an_object_does_not_receive_an_expected_message
+    repo = Object.new
+
+    expect(repo).to receive(:get_all)
+
+    assert_raise(Mockie::ExpectationFailed) { Mockie.verify }
+  end
 end
