@@ -52,4 +52,33 @@ class MockieTest < Test::Unit::TestCase
 
     assert_nothing_thrown { Mockie.verify }
   end
+
+  def test_mockie_throws_when_an_object_does_not_receive_a_message_with_expected_arguments
+    repo = Object.new
+
+    expect(repo).to receive(:get).with(1)
+    repo.get(2)
+
+    assert_raise(Mockie::ExpectationFailed) { Mockie.verify }
+  end
+
+  def test_mockie_does_not_throw_when_an_object_receives_a_message_with_expected_arguments
+    repo = Object.new
+    john = {id: 1, name: "John Doe"}
+
+    expect(repo).to receive(:get).with(1)
+    repo.get(1)
+
+    assert_nothing_thrown { Mockie.verify }
+  end
+
+  def test_mockie_allows_return_values_by_arguments_from_mocks
+    repo = Object.new
+    john = {id: 1, name: "John Doe"}
+
+    expect(repo).to receive(:get).with(1).and_return(john)
+
+    assert_equal(john, repo.get(1))
+    assert_nothing_thrown { Mockie.verify }
+  end
 end
