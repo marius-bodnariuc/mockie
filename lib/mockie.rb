@@ -1,7 +1,7 @@
 module Mockie
   module TestHelpers
     def allow(object)
-      StubTarget.new(object)
+      Mockie.stub_targets[object.object_id] ||= StubTarget.new(object)
     end
 
     def receive(message)
@@ -9,27 +9,45 @@ module Mockie
     end
   end
 
+  def self.stub_targets
+    @stub_targets ||= {}
+  end
+
   class StubTarget
     def initialize(object)
       @object = object
+      @definitions = []
     end
 
     def to(definition)
-      @object.define_singleton_method(definition.message) do
-        definition.return_value
+      @definitions << definition
+      local_definitions = @definitions
+
+      @object.define_singleton_method(definition.message) do |*args|
+        matching_definition = local_definitions.find do |d|
+          d.message == definition.message && d.args == args
+        end
+
+        matching_definition.return_value if matching_definition
       end
     end
   end
 
   class StubDefinition
-    attr_reader :message, :return_value
+    attr_reader :message, :return_value, :args
 
     def initialize(message)
       @message = message
+      @args = []
     end
 
     def and_return(value)
       @return_value = value
+      self
+    end
+
+    def with(*args)
+      @args = args
       self
     end
   end

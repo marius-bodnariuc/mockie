@@ -20,4 +20,17 @@ class MockieTest < Test::Unit::TestCase
 
     assert_equal(people, repo.get_all)
   end
+
+  def test_mockie_allows_object_to_receive_message_with_params_and_return_value
+    repo = Object.new
+
+    john = {id: 1, name: "John Doe"}
+    jane = {id: 2, name: "Jane Doe"}
+
+    allow(repo).to receive(:get).with(1).and_return(john)
+    allow(repo).to receive(:get).with(2).and_return(jane)
+
+    assert_equal(john, repo.get(1))
+    assert_equal(jane, repo.get(2))
+  end
 end
