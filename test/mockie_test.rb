@@ -43,4 +43,13 @@ class MockieTest < Test::Unit::TestCase
 
     assert_raise(Mockie::ExpectationFailed) { Mockie.verify }
   end
+
+  def test_mockie_does_not_throw_when_an_object_receives_an_expected_message
+    repo = Object.new
+
+    expect(repo).to receive(:get_all)
+    repo.get_all
+
+    assert_nothing_thrown { Mockie.verify }
+  end
 end

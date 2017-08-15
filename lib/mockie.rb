@@ -31,6 +31,7 @@ module Mockie
     def initialize(object)
       @object = object
       @definitions = []
+      @was_called = false
     end
 
     def to(definition)
@@ -42,7 +43,7 @@ module Mockie
           d.message == definition.message && d.args == args
         end
 
-        matching_definition.return_value if matching_definition
+        matching_definition.call if matching_definition
       end
     end
   end
@@ -72,8 +73,13 @@ module Mockie
       self
     end
 
+    def call
+      @was_called = true
+      @return_value
+    end
+
     def verify
-      raise ExpectationFailed
+      raise ExpectationFailed unless @was_called
     end
   end
 end
